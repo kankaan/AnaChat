@@ -4,3 +4,5 @@ pytest>=3.0
 flask-sqlalchemy>=2.0
 Passlib>=1.7
 sqlalchemy>=1.1
+Flask-HTTPAuth
+flask_debugtoolbar
