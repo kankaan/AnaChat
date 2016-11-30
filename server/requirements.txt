@@ -6,3 +6,5 @@ Passlib>=1.7
 sqlalchemy>=1.1
 Flask-HTTPAuth
 flask_debugtoolbar
+flask_login
+flask_wtf

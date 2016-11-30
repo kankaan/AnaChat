@@ -1,0 +1,28 @@
+<html>
+  <head>
+	 <link rel="stylesheet" type="text/css" href="/static/decoration.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	{% if title %}
+    <title>{{ title }} - Anachat</title>
+    {% else %}
+    <title>Welcome to AnaChat</title>
+    {% endif %}
+  </head>
+  <body>
+	<div id="topNavigation">
+		<div id="loginButton">
+			Login
+		</div>
+		test
+	</div>
+	<div id="contentAlign">
+		<div id="leftNavigation" class="col">
+			test
+		</div>
+		<div id="content"  class="col">
+			    {% block content %}{% endblock %}
+		</div>
+	</div>
+	<div id="footer">AnaChat</div>
+  </body>
+</html>
