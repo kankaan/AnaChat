@@ -11,11 +11,13 @@ from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from flask_login import LoginManager,login_user, logout_user, current_user, login_required
 import json
 from forms import *
+from flask_wtf.csrf import CsrfProtect
 
 #Let's crete the app
 app = Flask(__name__)
 app.debug = True
 api = Api(app)
+CsrfProtect(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 auth = HTTPTokenAuth('Bearer')
@@ -26,29 +28,9 @@ app.config['SECRET_KEY'] = os.urandom(24)
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 db = SQLAlchemy(app)
 
+#from models import *
 import models
 import views
-authTokens = []
-
-@auth.verify_token
-def verify_token(token):
-	print("VERIVDYFYFDSAFFAAFAS")
-	print(token)
-	print(token)
-	g.user = None
-	try:
-		data = jwt.loads(token)
-	except:
-		return False
-	user = User.query(jwtToken=token).first()
-	if user == None:
-		return False
-	return True
-
-def tokenLogin(message):
-	def decorated(*args, **kwargs):
-		print(message)
-	return message
 
 response_headers = {'Content-type':'application/json'}
 # reqparser from flask_restful
@@ -90,9 +72,43 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    # Here we use a class of some kind to represent and validate our
+    # client-side form data. For example, WTForms is a library that will
+    # handle this for us, and we use a custom LoginForm to validate.
+    form = LoginForm()
+    if form.validate_on_submit():
+        print form.errors
+        # Login and validate the user.
+        # user should be an instance of your `User` class
+        user = User.query.filter_by(username=form.username.data).first()
+        if (user == None):
+            return render_template('login.html',form=form)
+        if (not user.verify_password(form.password.data)):
+            return render_template('login.html',form=form)
+        login_user(user)
 
+        flask.flash('Logged in successfully.')
+
+        next = flask.request.args.get('next')
+        # is_safe_url should check if the url is safe for redirects.
+        # See http://flask.pocoo.org/snippets/62/ for an example.
+        if not is_safe_url(next):
+            return flask.abort(400)
+
+        return flask.redirect(next or flask.url_for('index'))
+    print("!!!!!!!!!!!!!!!!")
+    return render_template('login.html', form=form) 
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect('index.html')
 
 @app.route('/')
+@login_required
 def index():
 	return "Hello, %s!" % "ant"
 
@@ -131,7 +147,7 @@ class loginApi(Resource):
 		token = g.user.generate_auth_token(600)
 		return jsonify({'token': token.decode('ascii'), 'duration': 600})	
 
-class logout(Resource):
+class logoutApi(Resource):
 	def post(self):
 		args = parser.parse_args()
 		token = args['token']
@@ -139,9 +155,27 @@ class logout(Resource):
 		return "Logout"
 
 api.add_resource(loginApi, '/api/login/')
-api.add_resource(logout, '/api/logout/')
+api.add_resource(logoutApi, '/api/logout/')
 api.add_resource(userApi,'/api/user/')
 api.add_resource(chatAPI, '/api/chat/')
 
+def list_routes():
+    import urllib
+    output = []
+    for rule in app.url_map.iter_rules():
+
+        options = {}
+        for arg in rule.arguments:
+            options[arg] = "[{0}]".format(arg)
+
+        methods = ','.join(rule.methods)
+        #url = url_for(rule.endpoint, **options)
+        line = urllib.unquote("{:50s} {:20s}".format(rule.endpoint, methods))
+        output.append(line)
+    
+    for line in sorted(output):
+        print line
+
 if __name__ == '__main__':
+	list_routes()
 	app.run(debug=True)

@@ -55,7 +55,10 @@ class User(db.Model):
         return True
 
     def get_id(self):
-        return id
+        try:
+            return unicode(self.id)  # python 2
+        except NameError:
+            return str(self.id) # python 3
 
 class Message(db.Model):
     __tablename__ = 'message'

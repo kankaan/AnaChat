@@ -1,7 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1>Hi, {{ user.nickname }}!</h1>
-    {% for post in posts %}
-    <div><p>{{ post.author.nickname }} says: <b>{{ post.body }}</b></p></div>
-    {% endfor %}
+{% from "_formhelpers.html" import render_field %}
+<form method="POST" action="/login">
+  <dl>
+    {{ render_field(form.username) }}
+    {{ render_field(form.password) }}
+    {{ form.csrf_token }}
+  </dl>
+  <p><input type=submit value=Register>
+</form>
 {% endblock %}
