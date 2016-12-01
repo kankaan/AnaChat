@@ -2,10 +2,12 @@ from flask_sqlalchemy import SQLAlchemy
 
 from server import db
 from server import app
+from flask_login import UserMixin
+from passlib.apps import custom_app_context as pwd_context
 
 
 #user class for storing user information
-class User(db.Model):
+class User(db.Model,UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
     password_hash = db.Column(db.String(128))
@@ -45,14 +47,11 @@ class User(db.Model):
         user = User.query.get(data['id'])
         return user
 
-    def is_authenticated(self):
-        return True
-
     def is_active(self):
         return True
 
     def is_anonymous(self):
-        return True
+        return False
 
     def get_id(self):
         try:

@@ -6,6 +6,7 @@ p {
 	width: 20%;
 	background-image: url("background.png");
 	position:relative;
+	min-height:100vh;
 }
 #topNavigation {
 	height: 15%;
@@ -22,10 +23,13 @@ p {
 #footer {
 	background-color:purple;
 	text-align:center;
+	left-padding:5%;
+	height:7%;
 }
 #contentAlign {
 	width:100%;
 	display:table;
+	min-height:100vh;
 }
 #contentAlign .col {
   display: table-cell;
