@@ -1,10 +1,14 @@
 {%extends "base.html"%}
 {% block content%}
+
 {% for row in rows %}
-  <div class="row">{{ row }}</div>
+  <div class="messageRow">{{ row }}</div>
 {% endfor %}
+<div id="app">{{'{{message}}'}}</div>
 <div class="input-group">
   <input type="text" class="form-control" placeholder="Your message:" aria-describedby="basic-addon2">
   <span class="input-group-addon" id="basic-addon2">Send</span>
 </div>
+<script src="static/messages.js"></script>
 {% endblock%}
+

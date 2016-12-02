@@ -78,7 +78,9 @@ def register():
 @login_required
 def baseview():
 	print("baseview")
-	return render_template('userfrontpage.html')
+	print(current_user.username)
+	chatList = [{'chatName':'first chat'}]
+	return render_template('userfrontpage.html', username=current_user.username,chatList=chatList)
 
 @app.route('/chat',methods = ['GET','POST'])
 @login_required
@@ -86,3 +88,5 @@ def chat():
 	print("chat")
 	messages = ["foo","bar"]
 	return render_template('chat.html',rows=messages)
+
+

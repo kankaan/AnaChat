@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block content%}
-<h2> Hi user </h2>
+<h2> Hi {{username}} </h2>
 start chatting with people!
-<div class="row">
-	Create a new chat
-</div>
-<div class="row">
-	join to chat
-</div>
+	<p>Create a new chat or join to chat</p>
+	<div id="chatList">Your chats: 
+    {% for chat in chatList %}
+      <li>{{ chat.chatName }}</li>
+    {% endfor %}
+	</div>
 {%endblock%}
