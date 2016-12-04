@@ -6,9 +6,12 @@
 {% endfor %}
 <div id="app">{{'{{message}}'}}</div>
 <div class="input-group">
-  <input type="text" class="form-control" placeholder="Your message:" aria-describedby="basic-addon2">
-  <span class="input-group-addon" id="basic-addon2">Send</span>
+  <input type="text" class="form-control" placeholder="Your message:" aria-describedby="basic-addon2" id="chatMessage">
+  <button class="input-group-addon" type="button" id="basic-addon2" onclick="sendMessage()" >Send</button>
 </div>
+<form method="post" action="/">
+    <input type="hidden" id="csrf_token"  name="csrf_token" value="{{ csrf_token() }}" />
+</form>
 <script src="static/messages.js"></script>
 {% endblock%}
 

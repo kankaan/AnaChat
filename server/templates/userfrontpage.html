@@ -3,6 +3,8 @@
 <h2> Hi {{username}} </h2>
 start chatting with people!
 	<p>Create a new chat or join to chat</p>
+	<button class="btn btn-default" id="createChat" > Create a new discussion</button>
+	<button class="btn btn-default" id="joinChat" > Join to discussion </button>
 	<div id="chatList">Your chats: 
     {% for chat in chatList %}
       <li>{{ chat.chatName }}</li>

@@ -1,10 +1,12 @@
-from flask import Flask,request, g,Response, render_template, flash, url_for,redirect
+from flask import Flask,request, g,Response, render_template, flash, url_for,redirect, stream_with_context
 from flask_login import LoginManager,login_user, logout_user, current_user, login_required
 from urlparse import urlparse, urljoin
 from forms import *
 from server import app, db
+import itertools
 from server import login_manager
 from models import User
+import time
 
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)
@@ -89,4 +91,18 @@ def chat():
 	messages = ["foo","bar"]
 	return render_template('chat.html',rows=messages)
 
+@app.route('/chatti', methods=['POST'])
+def getChatMessage():
+	print(request.form['message'])
+	print(current_user.username)
+	return "ok"
 
+@app.route('/stream')
+def streamed_response():
+    if request.headers.get('accept') == 'text/event-stream':
+        def generate():
+            for i, c in enumerate(itertools.cycle('\|/-')):
+                yield "data: %s %d\n\n" % (c, i)
+                time.sleep(.1)  # an artificial delay   
+        return Response(generate(),content_type='text/event-stream')
+    return redirect(url_for('static', filename='index.html'))
