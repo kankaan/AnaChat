@@ -71,7 +71,9 @@ class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     chatname = db.Column(db.String(80), unique=True)
     messages = db.Column(db.Integer, db.ForeignKey('message.id'))
-        
+    topic = db.Column(db.String)
+    description = db.Column(db.String)   
+
 
 def initDb():
     db.drop_all()
