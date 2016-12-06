@@ -5,7 +5,7 @@ from forms import *
 from server import app, db
 import itertools
 from server import login_manager
-from models import User
+from models import *
 import time
 
 def is_safe_url(target):
@@ -89,13 +89,45 @@ def baseview():
 def chat():
 	print("chat")
 	messages = ["foo","bar"]
+	chat = Chat.query.filter_by(id=1).first()
+	print(chat.chatname)
+	print(chat.messages)
+	for i in chat.messages:
+		print(i)
 	return render_template('chat.html',rows=messages)
 
-@app.route('/chatti', methods=['POST'])
-def getChatMessage():
+@app.route('/newChat',methods=['POST'])
+@login_required
+def newChat():
+	print("newChat")
+	print(request.form['chatName'])
+	print(request.form['chatTitle'])
+	chat = Chat(request.form['chatName'],request.form['chatTitle'])
+	db.session.add(chat)
+	db.session.commit()
+	return "newchat created"
+
+@app.route('/chatMessage', methods=['POST'])
+@login_required
+def addChatMessage():
 	print(request.form['message'])
 	print(current_user.username)
+	message = Message(request.form['message'],1)
+	print(message)
+	db.session.add(message)
+	db.session.commit()
 	return "ok"
+
+
+@app.route('/chatStream')
+def streamMessages():
+	if request.headers.get('accept') == 'text/event-stream':
+		def generate():
+			for i in range(10):
+				yield "data: foo" #{"message":"mes","from":"another"}
+				time.sleep(3)
+		return Response(generate(),content_type="text/event-stream")
+	return redirect('/chat')
 
 @app.route('/stream')
 def streamed_response():
@@ -103,6 +135,6 @@ def streamed_response():
         def generate():
             for i, c in enumerate(itertools.cycle('\|/-')):
                 yield "data: %s %d\n\n" % (c, i)
-                time.sleep(.1)  # an artificial delay   
+                time.sleep(4)  # an artificial delay   
         return Response(generate(),content_type='text/event-stream')
     return redirect(url_for('static', filename='index.html'))

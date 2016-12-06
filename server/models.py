@@ -63,16 +63,25 @@ class Message(db.Model):
     __tablename__ = 'message'
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String)
-    chat = db.relationship('Chat',backref='message',lazy='dynamic')
+    chat = db.Column(db.Integer, db.ForeignKey('chat.id'))
             
+    def __init__(self,message,chat):
+        self.message = message
+        self.chat
+
 
 class Chat(db.Model):
     __tablename__ = 'chat'
     id = db.Column(db.Integer, primary_key=True)
     chatname = db.Column(db.String(80), unique=True)
-    messages = db.Column(db.Integer, db.ForeignKey('message.id'))
     topic = db.Column(db.String)
     description = db.Column(db.String)   
+    messages = db.relationship('Message',backref='chatMessage',lazy='dynamic')
+	
+    def __init__(self,chatName,Topic,Description = ""):
+        self.chatname = chatName
+        self.topic = Topic
+        self.description = Description
 
 
 def initDb():

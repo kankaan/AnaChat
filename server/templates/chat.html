@@ -1,13 +1,19 @@
 {%extends "base.html"%}
 {% block content%}
-
+<div class="panel panel-default">
+  <div class="panel-heading">Panel heading</div>
+  <div class="panel-body">
+ <ul class="list-group" id="chatMessagesList">
 {% for row in rows %}
-  <div class="messageRow">{{ row }}</div>
+    <li class="list-group-item">{{row}}</li>
 {% endfor %}
+</ul>
+  </div>
+</div>
 <div id="app">{{'{{message}}'}}</div>
 <div class="input-group">
   <input type="text" class="form-control" placeholder="Your message:" aria-describedby="basic-addon2" id="chatMessage">
-  <button class="input-group-addon" type="button" id="basic-addon2" onclick="sendMessage()" >Send</button>
+  <button class="btn btn-default" type="button" id="basic-addon2" onclick="sendMessage()" >Send</button>
 </div>
 <form method="post" action="/">
     <input type="hidden" id="csrf_token"  name="csrf_token" value="{{ csrf_token() }}" />
