@@ -31,10 +31,7 @@ def login():
         print form.errors
         # Login and validate the user.
         # user should be an instance of your `User` class
-        print("foo")
-        print(form.username.data)
         user = User.query.filter_by(username=form.username.data).first()
-        print(user)
         if (user == None):
             return render_template('login.html',form=form)
         if (not user.verify_password(form.password.data)):
@@ -45,12 +42,10 @@ def login():
 
         next = request.args.get('next')
         # is_safe_url should check if the url is safe for redirects.
-        # See http://flask.pocoo.org/snippets/62/ for an example.
         if not is_safe_url(next):
             return flask.abort(400)
 
         return redirect(next or url_for('baseview'))
-    print("!!!!!!!!!!!!!!!!")
     return render_template('login.html', form=form)
 
 @app.route("/logout")
@@ -62,18 +57,16 @@ def logout():
 @app.route('/')
 @login_required
 def index():
-    return "Hello, %s!" % "ant"
+    return redirect(url_for('login'))
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    print("register")
     form = RegistrationForm(request.form)
     if request.method == 'POST' and form.validate():
         user = User(form.username.data,form.password.data)
         db.session.add(user)
         db.session.commit()
-        print("moi")
         flash('Thanks for registering')
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
@@ -137,16 +130,6 @@ def addChatMessage():
 	return "ok"
 
 
-@app.route('/stream')
-def streamed_response():
-    if request.headers.get('accept') == 'text/event-stream':
-        def generate():
-            for i, c in enumerate(itertools.cycle('\|/-')):
-                yield "data: %s %d\n\n" % (c, i)
-                time.sleep(4)  # an artificial delay   
-        return Response(generate(),content_type='text/event-stream')
-    return redirect(url_for('static', filename='index.html'))
-
 def authenticated_only(f):
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
@@ -164,9 +147,12 @@ def handle_message(message):
 
 @socketio.on('JSONMessage')
 def messageJSON(JSONMessage):
-	print(JSONMessage['message'])
-	print(JSONMessage['room'])
-	socketio.emit("receivedMessage",JSONMessage['message'],
+	m = Message(JSONMessage['message'],JSONMessage['room'],current_user.id)
+	print(current_user.username, " ja id: ",current_user.id)
+	message = current_user.username + ": " + JSONMessage['message'] 
+	db.session.add(m)
+	db.session.commit()
+	socketio.emit("receivedMessage",message,
 		room=JSONMessage['room'] )
 
 @socketio.on('connect')

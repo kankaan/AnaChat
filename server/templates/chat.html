@@ -1,23 +1,24 @@
 {%extends "base.html"%}
 {% block content%}
 <div class="panel panel-default">
-  <div class="panel-heading">Panel heading</div>
-  <div class="panel-body">
- <ul class="list-group" id="chatMessagesList">
-{% for row in rows %}
-    <li class="list-group-item">{{row}}</li>
-{% endfor %}
-</ul>
-  </div>
+	<div class="panel-heading" id="chatTopic">Welcome!</div>
+	<div class="panel-body">
+ 		<ul class="list-group" id="chatMessagesList">
+			{% for row in rows %}
+    			<li class="list-group-item">{{row}}</li>
+			{% endfor %}
+		</ul>
+	</div>
 </div>
-<div id="app">{{'{{message}}'}}</div>
 <div class="input-group">
-  <input type="text" class="form-control" placeholder="Your message:" aria-describedby="basic-addon2" id="chatMessage">
-  <button class="btn btn-default" type="button" id="basic-addon2" onclick="sendMessage()" >Send</button>
+	<input type="text" class="form-control" placeholder="Your message:" aria-describedby="basic-addon2" id="chatMessage">
+	<button class="btn btn-default" type="button" id="basic-addon2" onclick="sendMessage()" >Send</button>
 </div>
 <form method="post" action="/">
+    <input type="hidden" id="currentChatID"  name="chatID" value="{{ currentChatID }}" />
     <input type="hidden" id="csrf_token"  name="csrf_token" value="{{ csrf_token() }}" />
 </form>
-<script src="static/messages.js"></script>
+<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+<script src="static/socket.js"></script>
 {% endblock%}
 

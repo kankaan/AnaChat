@@ -70,10 +70,10 @@ class Message(db.Model):
     message = db.Column(db.String)
     chat = db.Column(db.Integer, db.ForeignKey('chat.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))       
-    def __init__(self,message,chat):
+    def __init__(self,message,chat,user):
         self.message = message
-        self.chat
-
+        self.chat = chat
+        self.user = user  
 
 class Chat(db.Model):
     __tablename__ = 'chat'
