@@ -83,13 +83,14 @@ def baseview():
 @app.route('/chat',methods = ['POST'])
 @login_required
 def chat():
-	print("chat")
-	messages = ["foo","bar"]
+	messages = []
 	print("chatID ", request.form['chatID'])
 	chatID =  int(request.form['chatID'])
 	chat = Chat.query.filter_by(id=chatID).first()
 	print(chat.chatname)
 	print(chat.messages)
+	#for i in Message.query.filter_by(chat=chatID).all():
+	#	messages.append(i)
 	chatList = [{'chatName':'first chat','id':2},{'chatName':"second chat with A","id":1}]
 	for i in chat.messages:
 		print(i)

@@ -75,6 +75,7 @@ class Message(db.Model):
         self.chat = chat
         self.user = user  
 
+
 class Chat(db.Model):
     __tablename__ = 'chat'
     id = db.Column(db.Integer, primary_key=True)

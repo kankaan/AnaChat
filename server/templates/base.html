@@ -15,7 +15,10 @@
 	<div id="topNavigation">
 		<div id="loginButton">
 			{% if loggedIn %}
+				<form method="POST" action="/logout">
 				<button type="submit" formaction="/logout"  class="btn btn-default">Logout</button>
+				<input type="hidden" id="csrf_token"  name="csrf_token" value="{{ csrf_token() }}" />
+				</form>
 		    {% else %}
 				<button type="button" class="btn btn-default">Login</button>
 		    {% endif %}
