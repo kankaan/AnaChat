@@ -44,3 +44,9 @@ p {
 .messageRow {
 	
 }
+#chatMessagesList {
+	height:60vh;
+	overflow:hidden; 
+	overflow-y:scroll;
+}
+

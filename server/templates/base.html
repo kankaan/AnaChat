@@ -15,13 +15,18 @@
   <body>
 	<div id="topNavigation">
 		<div id="loginButton">
-			<button type="button" class="btn btn-default">Login</button>
+			{% if loggedIn %}
+				<button type="submit" formaction="/logout"  class="btn btn-default">Logout</button>
+		    {% else %}
+				<button type="button" class="btn btn-default">Login</button>
+		    {% endif %}
 		</div>
-		test
 	</div>
 	<div id="contentAlign">
 		<div id="leftNavigation" class="col">
-			test
+			{% for chat in participatedChat %}
+   				 <li class="list-group-item">{{chat.chatName}}</li>
+			{% endfor %}
 		</div>
 		<div id="content"  class="col">
 			    {% block content %}{% endblock %}

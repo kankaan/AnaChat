@@ -10,9 +10,8 @@ from itsdangerous import (JSONWebSignatureSerializer
 from itsdangerous import TimedJSONWebSignatureSerializer as JWT
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from flask_login import LoginManager,login_user, logout_user, current_user, login_required
-import json
-from forms import *
 from flask_wtf.csrf import CsrfProtect
+from flask_socketio import SocketIO
 
 
 #Let's crete the app
@@ -24,6 +23,6 @@ CsrfProtect(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 db = SQLAlchemy(app)
-
+socketio = SocketIO(app)
 
 from server import views, models

@@ -5,6 +5,10 @@ from server import app
 from flask_login import UserMixin
 from passlib.apps import custom_app_context as pwd_context
 
+userchat_table = db.Table('user_chat_table',
+	db.Column('user_id', db.Integer,db.ForeignKey('user.id'), nullable=False),
+	db.Column('chat_id', db.Integer,db.ForeignKey('chat.id'), nullable=False),
+	db.PrimaryKeyConstraint('user_id','chat_id'))
 
 #user class for storing user information
 class User(db.Model,UserMixin):
@@ -12,6 +16,7 @@ class User(db.Model,UserMixin):
     username = db.Column(db.String(80), unique=True)
     password_hash = db.Column(db.String(128))
     jwt_token = db.Column(db.String)
+    chats = db.relationship('Chat',secondary=userchat_table,backref='user')
     def __init__(self, username, password):
         self.username = username
         self.email = ""

@@ -1,12 +1,14 @@
-from flask import Flask,request, g,Response, render_template, flash, url_for,redirect, stream_with_context
+from flask import Flask,request, g,Response, render_template, flash, url_for,redirect, stream_with_context, jsonify
 from flask_login import LoginManager,login_user, logout_user, current_user, login_required
 from urlparse import urlparse, urljoin
 from forms import *
-from server import app, db
+from server import app, db, socketio
 import itertools
 from server import login_manager
 from models import *
 import time
+import functools
+from flask_socketio import emit,send, disconnect
 
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)
@@ -81,8 +83,8 @@ def register():
 def baseview():
 	print("baseview")
 	print(current_user.username)
-	chatList = [{'chatName':'first chat'}]
-	return render_template('userfrontpage.html', username=current_user.username,chatList=chatList)
+	chatList = [{'chatName':'first chat'},{'chatName':"second chat with A"}]
+	return render_template('userfrontpage.html', username=current_user.username,chatList=chatList, participatedChat=chatList,loggedIn=True)
 
 @app.route('/chat',methods = ['GET','POST'])
 @login_required
@@ -106,6 +108,17 @@ def newChat():
 	db.session.add(chat)
 	db.session.commit()
 	return "newchat created"
+
+@app.route('/chatList', methods=['POST'])
+@login_required
+def chatList():
+	print("chatList")
+	print(type(db.session.query(Chat).all()))
+	returnQueryList = []
+	for i in db.session.query(Chat).all():
+		print (i.chatname)
+		returnQueryList.append({"chatname":i.chatname,"id":i.id})
+	return jsonify(jsonList=returnQueryList)
 
 @app.route('/chatMessage', methods=['POST'])
 @login_required
@@ -138,3 +151,31 @@ def streamed_response():
                 time.sleep(4)  # an artificial delay   
         return Response(generate(),content_type='text/event-stream')
     return redirect(url_for('static', filename='index.html'))
+
+def authenticated_only(f):
+    @functools.wraps(f)
+    def wrapped(*args, **kwargs):
+        print(current_user)
+        if not current_user.is_authenticated:
+            disconnect()
+        else:
+            return f(*args, **kwargs)
+    return wrapped
+
+@app.route('/testi')
+@login_required
+def testi():
+	return render_template("chatTest.html")
+
+@socketio.on('message')
+def handle_message(message):
+    print('received message: ' + message)
+
+@socketio.on('JSONMessage')
+def messageJSON(JSONMessage):
+	print(JSONMessage['message'])
+	socketio.emit("receivedMessage",JSONMessage['message'] )
+
+@socketio.on('connect')
+def on_connect():
+    send('connected')
