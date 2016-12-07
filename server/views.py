@@ -8,7 +8,7 @@ from server import login_manager
 from models import *
 import time
 import functools
-from flask_socketio import emit,send, disconnect
+from flask_socketio import emit,send, disconnect,join_room, leave_room
 
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)
@@ -73,30 +73,35 @@ def register():
         user = User(form.username.data,form.password.data)
         db.session.add(user)
         db.session.commit()
-
+        print("moi")
         flash('Thanks for registering')
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
+
 
 @app.route('/baseview', methods=['GET','POST'])
 @login_required
 def baseview():
 	print("baseview")
 	print(current_user.username)
-	chatList = [{'chatName':'first chat'},{'chatName':"second chat with A"}]
+	chatList = [{'chatName':'first chat','id':2},{'chatName':"second chat with A","id":1}]
 	return render_template('userfrontpage.html', username=current_user.username,chatList=chatList, participatedChat=chatList,loggedIn=True)
 
-@app.route('/chat',methods = ['GET','POST'])
+@app.route('/chat',methods = ['POST'])
 @login_required
 def chat():
 	print("chat")
 	messages = ["foo","bar"]
-	chat = Chat.query.filter_by(id=1).first()
+	print("chatID ", request.form['chatID'])
+	chatID =  int(request.form['chatID'])
+	chat = Chat.query.filter_by(id=chatID).first()
 	print(chat.chatname)
 	print(chat.messages)
+	chatList = [{'chatName':'first chat','id':2},{'chatName':"second chat with A","id":1}]
 	for i in chat.messages:
 		print(i)
-	return render_template('chat.html',rows=messages)
+	return render_template('chat.html',
+		rows=messages,participatedChat=chatList,currentChatID=chatID)
 
 @app.route('/newChat',methods=['POST'])
 @login_required
@@ -132,16 +137,6 @@ def addChatMessage():
 	return "ok"
 
 
-@app.route('/chatStream')
-def streamMessages():
-	if request.headers.get('accept') == 'text/event-stream':
-		def generate():
-			for i in range(10):
-				yield "data: foo" #{"message":"mes","from":"another"}
-				time.sleep(3)
-		return Response(generate(),content_type="text/event-stream")
-	return redirect('/chat')
-
 @app.route('/stream')
 def streamed_response():
     if request.headers.get('accept') == 'text/event-stream':
@@ -162,10 +157,6 @@ def authenticated_only(f):
             return f(*args, **kwargs)
     return wrapped
 
-@app.route('/testi')
-@login_required
-def testi():
-	return render_template("chatTest.html")
 
 @socketio.on('message')
 def handle_message(message):
@@ -174,8 +165,23 @@ def handle_message(message):
 @socketio.on('JSONMessage')
 def messageJSON(JSONMessage):
 	print(JSONMessage['message'])
-	socketio.emit("receivedMessage",JSONMessage['message'] )
+	print(JSONMessage['room'])
+	socketio.emit("receivedMessage",JSONMessage['message'],
+		room=JSONMessage['room'] )
 
 @socketio.on('connect')
 def on_connect():
     send('connected')
+
+@socketio.on('join')
+def on_join(data):
+    room = data['room']
+    join_room(room)
+    send(' has entered the room.', room=room)
+
+@socketio.on('leave')
+def on_leave(data):
+    room = data['room']
+    leave_room(room)
+    send( ' has left the room.', room=room)
+

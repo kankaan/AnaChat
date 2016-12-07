@@ -25,3 +25,8 @@ $('#joinChat').click(function () {
         show: true
     });
 });
+
+function gotoChat(chatID) {
+	var token = document.getElementById('csrf_token').value;
+	$.post("/chat",{"csrf_token":token});
+}

@@ -11,7 +11,7 @@ p {
 #topNavigation {
 	height: 15%;
 	width:100%;
-	background-color: blue;
+	background-image: url("topBackground.png");
 	text-align:center;
 }
 #content {

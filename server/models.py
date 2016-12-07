@@ -69,7 +69,7 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String)
     chat = db.Column(db.Integer, db.ForeignKey('chat.id'))
-            
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))       
     def __init__(self,message,chat):
         self.message = message
         self.chat

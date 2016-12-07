@@ -4,7 +4,6 @@
 	 <link rel="stylesheet" type="text/css" href="/static/decoration.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-	<script src="https://unpkg.com/vue/dist/vue.js"></script>
 
 	{% if title %}
     <title>{{ title }} - Anachat</title>
@@ -23,11 +22,7 @@
 		</div>
 	</div>
 	<div id="contentAlign">
-		<div id="leftNavigation" class="col">
-			{% for chat in participatedChat %}
-   				 <li class="list-group-item">{{chat.chatName}}</li>
-			{% endfor %}
-		</div>
+		{% include "leftNavigation.html" %}
 		<div id="content"  class="col">
 			    {% block content %}{% endblock %}
 		</div>

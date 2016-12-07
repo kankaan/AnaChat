@@ -1,13 +1,15 @@
-    var socket = io.connect('http://' + document.domain + ':' + location.port);
-    socket.on('connect', function() {
-		console.log("connected to server")
-        socket.emit('JSONMessage', {"message": 'I\'m connected!'});
-    });
-	socket.emit("JSONMessage",{"message":"hej"})
+var socket = io.connect('http://' + document.domain + ':' + location.port);
+socket.on('connect', function() {
+		console.log("connected to server");
+		joinToRoom()
+});
 
 function sendMessage() {
+
+	var chatID = document.getElementById("currentChatID").value;
 	var message = document.getElementById('chatMessage').value;
-	socket.emit("JSONMessage",{"message":message})
+	socket.emit("JSONMessage",{"message":message, "room":chatID})
+    document.getElementById('chatMessage').value = "";
 }
 
 socket.on("receivedMessage", function(_message) {
@@ -18,6 +20,15 @@ socket.on("receivedMessage", function(_message) {
     receivedMessage.className = "list-group-item"
     chatList.appendChild(receivedMessage);
     console.log(_message);
-	$("#chatMessageList").animate({ scrollTop: $("#chatMessageList")[0].scrollHeight }, 1000);
 });
 
+function joinToRoom() {
+	var chatID = document.getElementById("currentChatID").value;
+	console.log(chatID)
+	socket.emit("join",{"room":chatID});
+}
+
+function setTitle() {
+	document.getElementById("chatTopic").innerHTML = "testi";
+}
+setTitle();
