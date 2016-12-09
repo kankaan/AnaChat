@@ -6,7 +6,7 @@ from server import app, db, socketio
 import itertools
 from server import login_manager
 from models import *
-import time
+import datetime
 import functools
 from flask_socketio import emit,send, disconnect,join_room, leave_room
 
@@ -60,6 +60,12 @@ def index():
     return redirect(url_for('login'))
 
 
+@login_manager.unauthorized_handler
+def unauthorized():
+    return redirect(url_for('register'))
+
+
+# New user registration function.
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm(request.form)
@@ -71,24 +77,30 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
-
+# Baseview is shown for users frontpage
+# It renders view from template userfrontpage.html and template needs certain values:
+# username = name of current user
+# chatList = list of chats where user has join
 @app.route('/baseview', methods=['GET','POST'])
 @login_required
 def baseview():
-	print("baseview")
-	print(current_user.username)
 	chatList = [{'chatName':'first chat','id':2},{'chatName':"second chat with A","id":1}]
 	return render_template('userfrontpage.html', username=current_user.username,chatList=chatList, participatedChat=chatList,loggedIn=True)
 
+
+# Chat page:
+# returns a chat page with:
+# participatedChat = list of chats where user has join
+# rows = list of chat messages
+# currentChatID = ID of current chat
 @app.route('/chat',methods = ['POST'])
 @login_required
 def chat():
+	timeNow = datetime.datetime.now()
+	print( "current time: (", timeNow.hour, ":", timeNow.minute,")")
 	messages = []
-	print("chatID ", request.form['chatID'])
 	chatID =  int(request.form['chatID'])
 	chat = Chat.query.filter_by(id=chatID).first()
-	print(chat.chatname)
-	print(chat.messages)
 	#for i in Message.query.filter_by(chat=chatID).all():
 	#	messages.append(i)
 	chatList = [{'chatName':'first chat','id':2},{'chatName':"second chat with A","id":1}]
@@ -97,17 +109,28 @@ def chat():
 	return render_template('chat.html',
 		rows=messages,participatedChat=chatList,currentChatID=chatID)
 
+# newChat creates a new chat:
+# function checks first, if user has provided a name for the chat.
 @app.route('/newChat',methods=['POST'])
 @login_required
 def newChat():
 	print("newChat")
 	print(request.form['chatName'])
 	print(request.form['chatTitle'])
-	chat = Chat(request.form['chatName'],request.form['chatTitle'])
-	db.session.add(chat)
-	db.session.commit()
-	return "newchat created"
+	if (request.form['chatName'] != None and request.form['chatTitle'] != None):
+		chat = Chat(request.form['chatName'],request.form['chatTitle'])
+		db.session.add(chat)
+		db.session.commit()
+		return "newchat created"
+	elif (request.form['chatName'] != None):
+		chat = Chat(request.form['chatName'], "")
+		db.session.add(chat)
+		db.session.commit()
+		return "newChat created"
+	else:
+		return "Provide name for the chat"
 
+# chatList returns a list of chats in a JSON format.
 @app.route('/chatList', methods=['POST'])
 @login_required
 def chatList():
@@ -119,6 +142,7 @@ def chatList():
 		returnQueryList.append({"chatname":i.chatname,"id":i.id})
 	return jsonify(jsonList=returnQueryList)
 
+#this function was propably for the old version
 @app.route('/chatMessage', methods=['POST'])
 @login_required
 def addChatMessage():
@@ -131,10 +155,11 @@ def addChatMessage():
 	return "ok"
 
 
+# autenticated_only is for socket authentication.
+# Check: https://flask-socketio.readthedocs.io/en/latest/
 def authenticated_only(f):
     @functools.wraps(f)
     def wrapped(*args, **kwargs):
-        print(current_user)
         if not current_user.is_authenticated:
             disconnect()
         else:
