@@ -96,16 +96,20 @@ def baseview():
 @app.route('/chat',methods = ['POST'])
 @login_required
 def chat():
+	if (request.form['chatID'] == None):
+		return redirect(url_for('baseview'))
 	timeNow = datetime.datetime.now()
-	print( "current time: (", timeNow.hour, ":", timeNow.minute,")")
 	messages = []
 	chatID =  int(request.form['chatID'])
 	chat = Chat.query.filter_by(id=chatID).first()
-	#for i in Message.query.filter_by(chat=chatID).all():
+	messages = Message.query.filter_by(chat=chatID).order_by(Message.time)
+	for i in messages:
+		print (i.message, " ", i.time)
 	#	messages.append(i)
 	chatList = [{'chatName':'first chat','id':2},{'chatName':"second chat with A","id":1}]
 	for i in chat.messages:
 		print(i)
+	print(chat.chatname)
 	return render_template('chat.html',
 		rows=messages,participatedChat=chatList,currentChatID=chatID)
 
@@ -114,9 +118,6 @@ def chat():
 @app.route('/newChat',methods=['POST'])
 @login_required
 def newChat():
-	print("newChat")
-	print(request.form['chatName'])
-	print(request.form['chatTitle'])
 	if (request.form['chatName'] != None and request.form['chatTitle'] != None):
 		chat = Chat(request.form['chatName'],request.form['chatTitle'])
 		db.session.add(chat)
@@ -134,8 +135,6 @@ def newChat():
 @app.route('/chatList', methods=['POST'])
 @login_required
 def chatList():
-	print("chatList")
-	print(type(db.session.query(Chat).all()))
 	returnQueryList = []
 	for i in db.session.query(Chat).all():
 		print (i.chatname)
@@ -146,10 +145,7 @@ def chatList():
 @app.route('/chatMessage', methods=['POST'])
 @login_required
 def addChatMessage():
-	print(request.form['message'])
-	print(current_user.username)
 	message = Message(request.form['message'],1)
-	print(message)
 	db.session.add(message)
 	db.session.commit()
 	return "ok"
@@ -168,30 +164,38 @@ def authenticated_only(f):
 
 
 @socketio.on('message')
+@authenticated_only
 def handle_message(message):
     print('received message: ' + message)
 
 @socketio.on('JSONMessage')
+@authenticated_only
 def messageJSON(JSONMessage):
-	m = Message(JSONMessage['message'],JSONMessage['room'],current_user.id)
-	print(current_user.username, " ja id: ",current_user.id)
-	message = current_user.username + ": " + JSONMessage['message'] 
+	now = datetime.datetime.now()
+	timeNow = "(" + str(now.hour) + ":" + str(now.minute) + ") "
+	m = Message(JSONMessage['message'],JSONMessage['room'],
+		current_user.id, now)
+	message = timeNow + current_user.username + ": " + JSONMessage['message'] 
 	db.session.add(m)
 	db.session.commit()
 	socketio.emit("receivedMessage",message,
 		room=JSONMessage['room'] )
 
+
 @socketio.on('connect')
+@authenticated_only
 def on_connect():
     send('connected')
 
 @socketio.on('join')
+@authenticated_only
 def on_join(data):
     room = data['room']
     join_room(room)
     send(' has entered the room.', room=room)
 
 @socketio.on('leave')
+@authenticated_only
 def on_leave(data):
     room = data['room']
     leave_room(room)

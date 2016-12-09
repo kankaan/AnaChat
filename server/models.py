@@ -1,9 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
 
-from server import db
-from server import app
+from server import db, app
 from flask_login import UserMixin
 from passlib.apps import custom_app_context as pwd_context
+import datetime
 
 userchat_table = db.Table('user_chat_table',
 	db.Column('user_id', db.Integer,db.ForeignKey('user.id'), nullable=False),
@@ -70,10 +70,12 @@ class Message(db.Model):
     message = db.Column(db.String)
     chat = db.Column(db.Integer, db.ForeignKey('chat.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))       
-    def __init__(self,message,chat,user):
+    time = db.Column(db.DateTime)
+    def __init__(self,message,chat,user, dTime = datetime.datetime.now()):
         self.message = message
         self.chat = chat
-        self.user = user  
+        self.user = user
+        self.time = dTime
 
 
 class Chat(db.Model):
