@@ -77,6 +77,29 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
 
+def chatLists(userID = None):
+	chatList = []
+	print(userID)
+	print(current_user.id)
+	if (userID != None):
+		chatList = db.session.query(Chat).join(User,Chat.users).filter(User.id == current_user.id).all()
+		for i in chatList:
+			print (i)
+	else:
+		print ("bar")
+		chatList = Chat.query.all()
+	returnList = []
+	for i in chatList:
+		print(i)
+		chat = {}
+		chat['name'] = i.chatname
+		chat['title'] = i.topic
+		chat['id'] = i.id
+		returnList.append(chat)
+	print(returnList)
+	return returnList
+	
+	print(user.chats)
 # Baseview is shown for users frontpage
 # It renders view from template userfrontpage.html and template needs certain values:
 # username = name of current user
@@ -85,7 +108,10 @@ def register():
 @login_required
 def baseview():
 	chatList = [{'chatName':'first chat','id':2},{'chatName':"second chat with A","id":1}]
-	return render_template('userfrontpage.html', username=current_user.username,chatList=chatList, participatedChat=chatList,loggedIn=True)
+	allChats = chatLists()
+	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	chatList = chatLists(current_user.id)
+	return render_template('userfrontpage.html', username=current_user.username,chatList=chatList, participatedChat=chatList,loggedIn=True, allChats=allChats)
 
 
 def printMessage(sqlObject):
@@ -93,6 +119,9 @@ def printMessage(sqlObject):
 	senderObj = User.query.filter_by(id=sqlObject.user_id).first()
 	senderName = senderObj.username
 	return messageTime + " " + senderName + ": " + sqlObject.message 
+
+	
+	#[{'chatName':'first chat','id':2},{'chatName':"second chat with     A","id":1}]
 
 # Chat page:
 # returns a chat page with:
@@ -112,9 +141,10 @@ def chat():
 	prettify = []
 	for i in messages:
 		prettify.append(printMessage(i))
-	chatList = [{'chatName':'first chat','id':2},{'chatName':"second chat with A","id":1}]
-	x = User.query.filter_by(id = current_user.id).first()
-	return render_template('chat.html',
+#	chatList = [{'chatName':'first chat','id':2},{'chatName':"second chat with A","id":1}]
+	chatList = chatLists(current_user.id)
+	#x = User.query.filter_by(id = current_user.id).first()
+	return render_template('chat.html', 
 		rows=prettify,participatedChat=chatList,currentChatID=chatID)
 
 # newChat creates a new chat:
@@ -154,6 +184,18 @@ def addChatMessage():
 	db.session.commit()
 	return "ok"
 
+# joinChat:
+# this function adds chat for user and user for chat
+@app.route("/joinChat", methods=['POST'])
+@login_required
+def joinChat():
+	if (request.form['chatID'] == None):
+		return redirect(url_for('baseview'))
+	user = User.query.filter_by(id=current_user.id).first()
+	chatID =  int(request.form['chatID'])
+	chat = Chat.query.filter_by(id=chatID).first()
+	user.chats.append(chat)
+	return redirect(url_for('baseview'))
 
 # autenticated_only is for socket authentication.
 # Check: https://flask-socketio.readthedocs.io/en/latest/

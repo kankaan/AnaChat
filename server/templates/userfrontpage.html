@@ -49,18 +49,25 @@ start chatting with people!
             <input type="text" class="form-control" id="recipient-name">
           </div>
 		</form>
-<table class="table table-striped"
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Topic</th>
-      </tr>
-    </thead>
+	<table class="table table-striped"
+   	 	<thead>
+      		<tr>
+        		<th>Name</th>
+       		 	<th>Topic</th>
+      		</tr>
+    	</thead>
     <tbody id="chatListModal">
+	{% for joinChat in allChats %}
       <tr>
-	<td><button type="button" class="btn btn-default">fsad</button></td>
-		<td>nice</td>
+	<form method="POST" action="/joinChat">
+		<td><button type="submit" class="btn btn-default">{{joinChat.name}}</button></td>
+		<td>{{joinChat.title}}</td>
+          <input type="hidden" name="chatID" value={{joinChat.id}}>
+		<input type="hidden" id="csrf_token"  name="csrf_token" value="{{ csrf_token() }}" />
+
+	</form>
       </tr>
+	{% endfor %}
     </tbody>
   </table>
 

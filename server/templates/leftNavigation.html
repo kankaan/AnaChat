@@ -1,8 +1,9 @@
 <div id="leftNavigation" class="col">
+	<h3> Your discussions: </h3>
     {% for chat in participatedChat %}
     <form action="/chat" method="post">
 		  <input type="hidden" name="chatID" value={{chat.id}}>
-        <button class="list-group-item" >{{chat.chatName}}</button>
+        <button class="list-group-item" >{{chat.name}}</button>
 	    <input type="hidden" id="csrf_token"  name="csrf_token" value="{{ csrf_token() }}" />
 
      </form>
