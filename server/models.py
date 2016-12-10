@@ -16,7 +16,7 @@ class User(db.Model,UserMixin):
     username = db.Column(db.String(80), unique=True)
     password_hash = db.Column(db.String(128))
     jwt_token = db.Column(db.String)
-    chats = db.relationship('Chat',secondary=userchat_table,backref='user')
+    chats = db.relationship('Chat',secondary=userchat_table,backref='users')
     def __init__(self, username, password):
         self.username = username
         self.email = ""
@@ -74,9 +74,15 @@ class Message(db.Model):
     def __init__(self,message,chat,user, dTime = datetime.datetime.now()):
         self.message = message
         self.chat = chat
-        self.user = user
+        self.user_id = user
         self.time = dTime
 
+    #def __repr__(self):
+    #    if (self.time != None):
+    #        return "(" + str(self.time.hour) + ":" + str(self.time.minute) +") "+ self.message
+    #    return "(??:??) " + self.message
+    def messageTime(self):
+        return "(" + str(self.time.hour) + ":" + str(self.time.minute) + ")"
 
 class Chat(db.Model):
     __tablename__ = 'chat'

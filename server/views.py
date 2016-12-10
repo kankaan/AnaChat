@@ -88,6 +88,12 @@ def baseview():
 	return render_template('userfrontpage.html', username=current_user.username,chatList=chatList, participatedChat=chatList,loggedIn=True)
 
 
+def printMessage(sqlObject):
+	messageTime = "(" + str(sqlObject.time.hour) + ":" + str(sqlObject.time.minute) + ")"
+	senderObj = User.query.filter_by(id=sqlObject.user_id).first()
+	senderName = senderObj.username
+	return messageTime + " " + senderName + ": " + sqlObject.message 
+
 # Chat page:
 # returns a chat page with:
 # participatedChat = list of chats where user has join
@@ -102,16 +108,14 @@ def chat():
 	messages = []
 	chatID =  int(request.form['chatID'])
 	chat = Chat.query.filter_by(id=chatID).first()
-	messages = Message.query.filter_by(chat=chatID).order_by(Message.time)
+	messages = Message.query.filter_by(chat=chatID).order_by(Message.time).limit(20)
+	prettify = []
 	for i in messages:
-		print (i.message, " ", i.time)
-	#	messages.append(i)
+		prettify.append(printMessage(i))
 	chatList = [{'chatName':'first chat','id':2},{'chatName':"second chat with A","id":1}]
-	for i in chat.messages:
-		print(i)
-	print(chat.chatname)
+	x = User.query.filter_by(id = current_user.id).first()
 	return render_template('chat.html',
-		rows=messages,participatedChat=chatList,currentChatID=chatID)
+		rows=prettify,participatedChat=chatList,currentChatID=chatID)
 
 # newChat creates a new chat:
 # function checks first, if user has provided a name for the chat.
@@ -172,6 +176,7 @@ def handle_message(message):
 @authenticated_only
 def messageJSON(JSONMessage):
 	now = datetime.datetime.now()
+	print(current_user.id)
 	timeNow = "(" + str(now.hour) + ":" + str(now.minute) + ") "
 	m = Message(JSONMessage['message'],JSONMessage['room'],
 		current_user.id, now)
