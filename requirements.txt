@@ -9,3 +9,4 @@ flask_login
 flask_wtf
 flask-socketio
 gevent
+coverage==4.2

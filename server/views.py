@@ -17,6 +17,11 @@ def is_safe_url(target):
            ref_url.netloc == test_url.netloc
 
 
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return redirect(url_for('baseview'))
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.filter_by(id=(user_id)).first()
@@ -33,9 +38,9 @@ def login():
         # user should be an instance of your `User` class
         user = User.query.filter_by(username=form.username.data).first()
         if (user == None):
-            return render_template('login.html',form=form)
+            return render_template('login.html',form=form),400
         if (not user.verify_password(form.password.data)):
-            return render_template('login.html',form=form)
+            return render_template('login.html',form=form),400
         login_user(user)
 
         flash('Logged in successfully.')
@@ -69,37 +74,36 @@ def unauthorized():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm(request.form)
-    if request.method == 'POST' and form.validate():
-        user = User(form.username.data,form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash('Thanks for registering')
-        return redirect(url_for('login'))
-    return render_template('register.html', form=form)
+    if (request.method == 'POST' and form.validate()):
+        if (User.query.filter_by(username=form.username.data) != None):
+            user = User(form.username.data,form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            flash('Thanks for registering')
+            return redirect(url_for('login'))
+        # If nickname is already taken function ends here.
+        # This should return something clever, like nick already taken.
+        return render_template('register.html',form=form),400
+    return render_template('register.html', form=form),400
 
+# chatLists(userID):
+# funtion returns either all the chats of the database or
+# if the userID is set, the chats of user.
 def chatLists(userID = None):
 	chatList = []
-	print(userID)
-	print(current_user.id)
 	if (userID != None):
 		chatList = db.session.query(Chat).join(User,Chat.users).filter(User.id == current_user.id).all()
-		for i in chatList:
-			print (i)
 	else:
-		print ("bar")
 		chatList = Chat.query.all()
 	returnList = []
 	for i in chatList:
-		print(i)
 		chat = {}
 		chat['name'] = i.chatname
 		chat['title'] = i.topic
 		chat['id'] = i.id
 		returnList.append(chat)
-	print(returnList)
 	return returnList
 	
-	print(user.chats)
 # Baseview is shown for users frontpage
 # It renders view from template userfrontpage.html and template needs certain values:
 # username = name of current user
@@ -107,9 +111,7 @@ def chatLists(userID = None):
 @app.route('/baseview', methods=['GET','POST'])
 @login_required
 def baseview():
-	chatList = [{'chatName':'first chat','id':2},{'chatName':"second chat with A","id":1}]
 	allChats = chatLists()
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 	chatList = chatLists(current_user.id)
 	return render_template('userfrontpage.html', username=current_user.username,chatList=chatList, participatedChat=chatList,loggedIn=True, allChats=allChats)
 
@@ -141,10 +143,8 @@ def chat():
 	prettify = []
 	for i in messages:
 		prettify.append(printMessage(i))
-#	chatList = [{'chatName':'first chat','id':2},{'chatName':"second chat with A","id":1}]
 	chatList = chatLists(current_user.id)
-	#x = User.query.filter_by(id = current_user.id).first()
-	return render_template('chat.html', 
+	return render_template('chat.html', loggedIn=True,
 		rows=prettify,participatedChat=chatList,currentChatID=chatID)
 
 # newChat creates a new chat:
