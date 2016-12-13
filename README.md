@@ -25,3 +25,6 @@ gevent are installed"
 ** send picure to user, who wants to download it
 * Windows phone and Android application
 * Create better README file
+* Google or Facebook login
+* irc gateway
+* user can set password to chat

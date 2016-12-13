@@ -1,14 +1,13 @@
 // Create a new chat by sending post message to the server
 // TODO: Validate information before sending to the server
 function newChat() {
-console.log("foo")
 var name = document.getElementById("chatName").value;
 var title = document.getElementById("chatTitle").value;
 var token = document.getElementById('csrf_token').value;
 console.log(name)
 console.log(title)
 $.post( "/newChat", {"chatName":name,"chatTitle":title, "csrf_token":token})
-
+$('#createChatModal').modal('hide')
 }
 
 // This function should be used to loading a existing chats.
