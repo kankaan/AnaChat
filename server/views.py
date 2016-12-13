@@ -17,15 +17,20 @@ def is_safe_url(target):
            ref_url.netloc == test_url.netloc
 
 
-
+# page_not_found:
+# when user tries to enter to url which isn't valid, Flask redirects to
+# baseview
 @app.errorhandler(404)
 def page_not_found(error):
     return redirect(url_for('baseview'))
 
+# This funtion is used by flask_login
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.filter_by(id=(user_id)).first()
 
+# Login page of the service.
+# 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # Here we use a class of some kind to represent and validate our
@@ -53,18 +58,21 @@ def login():
         return redirect(next or url_for('baseview'))
     return render_template('login.html', form=form)
 
+#logout function
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
     return redirect('index.html')
 
+# TODO: create landing page for user
 @app.route('/')
 @login_required
 def index():
     return redirect(url_for('login'))
 
 
+# This function redirects unauthorized users to register page
 @login_manager.unauthorized_handler
 def unauthorized():
     return redirect(url_for('register'))
@@ -75,6 +83,7 @@ def unauthorized():
 def register():
     form = RegistrationForm(request.form)
     if (request.method == 'POST' and form.validate()):
+        # check if username already exists in the database
         if (User.query.filter_by(username=form.username.data).first() == None):
             user = User(form.username.data,form.password.data)
             db.session.add(user)
@@ -104,7 +113,7 @@ def chatLists(userID = None):
 		returnList.append(chat)
 	return returnList
 	
-# Baseview is shown for users frontpage
+# Baseview is shown for users as a frontpage
 # It renders view from template userfrontpage.html and template needs certain values:
 # username = name of current user
 # chatList = list of chats where user has join
@@ -115,15 +124,16 @@ def baseview():
 	chatList = chatLists(current_user.id)
 	return render_template('userfrontpage.html', username=current_user.username,chatList=chatList, participatedChat=chatList,loggedIn=True, allChats=allChats)
 
-
+# printMessage
+# Function takes a message object as a parameter.
+# Then function parses chat message from it in an example form:
+# (12:12) UserX: "HI!"
 def printMessage(sqlObject):
 	messageTime = "(" + str(sqlObject.time.hour) + ":" + str(sqlObject.time.minute) + ")"
 	senderObj = User.query.filter_by(id=sqlObject.user_id).first()
 	senderName = senderObj.username
 	return messageTime + " " + senderName + ": " + sqlObject.message 
 
-	
-	#[{'chatName':'first chat','id':2},{'chatName':"second chat with     A","id":1}]
 
 # Chat page:
 # returns a chat page with:
@@ -139,6 +149,7 @@ def chat():
 	messages = []
 	chatID =  int(request.form['chatID'])
 	chat = Chat.query.filter_by(id=chatID).first()
+    # Only 20 latest messages are shown
 	messages = Message.query.filter_by(chat=chatID).order_by(Message.time).limit(20)
 	prettify = []
 	for i in messages:
@@ -149,6 +160,7 @@ def chat():
 
 # newChat creates a new chat:
 # function checks first, if user has provided a name for the chat.
+# TODO: Prevent user to creating chats with the same name
 @app.route('/newChat',methods=['POST'])
 @login_required
 def newChat():
@@ -165,7 +177,7 @@ def newChat():
 	else:
 		return "Provide name for the chat"
 
-# chatList returns a list of chats in a JSON format.
+# chatList returns a list of all the chats in a JSON format.
 @app.route('/chatList', methods=['POST'])
 @login_required
 def chatList():
@@ -176,6 +188,7 @@ def chatList():
 	return jsonify(jsonList=returnQueryList)
 
 #this function was propably for the old version
+# TODO: check if this is still valid
 @app.route('/chatMessage', methods=['POST'])
 @login_required
 def addChatMessage():
@@ -185,7 +198,8 @@ def addChatMessage():
 	return "ok"
 
 # joinChat:
-# this function adds chat for user and user for chat
+# this function adds chat for the user and user for the chat in sql point of
+# view.
 @app.route("/joinChat", methods=['POST'])
 @login_required
 def joinChat():
@@ -214,11 +228,13 @@ def authenticated_only(f):
 def handle_message(message):
     print('received message: ' + message)
 
+# messageJSON is used for broadcasting user messages to other chat members
+# The method first creates message instance and saves it to database. Then
+# method send it to the audience of the chat.
 @socketio.on('JSONMessage')
 @authenticated_only
 def messageJSON(JSONMessage):
 	now = datetime.datetime.now()
-	print(current_user.id)
 	timeNow = "(" + str(now.hour) + ":" + str(now.minute) + ") "
 	m = Message(JSONMessage['message'],JSONMessage['room'],
 		current_user.id, now)
@@ -229,6 +245,7 @@ def messageJSON(JSONMessage):
 		room=JSONMessage['room'] )
 
 
+# Functions below are not propably needed.
 @socketio.on('connect')
 @authenticated_only
 def on_connect():

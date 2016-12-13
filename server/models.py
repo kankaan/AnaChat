@@ -1,3 +1,5 @@
+# This is the SQL schema of the application.
+
 from flask_sqlalchemy import SQLAlchemy
 
 from server import db, app
@@ -5,12 +7,14 @@ from flask_login import UserMixin
 from passlib.apps import custom_app_context as pwd_context
 import datetime
 
+# Many to many relationship betweem User and Chat
 userchat_table = db.Table('user_chat_table',
 	db.Column('user_id', db.Integer,db.ForeignKey('user.id'), nullable=False),
 	db.Column('chat_id', db.Integer,db.ForeignKey('chat.id'), nullable=False),
 	db.PrimaryKeyConstraint('user_id','chat_id'))
 
 #user class for storing user information
+# TODO: remove unnecessary legacy funtions
 class User(db.Model,UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
@@ -64,6 +68,7 @@ class User(db.Model,UserMixin):
         except NameError:
             return str(self.id) # python 3
 
+# message table for storing users message data.
 class Message(db.Model):
     __tablename__ = 'message'
     id = db.Column(db.Integer, primary_key=True)
@@ -77,13 +82,13 @@ class Message(db.Model):
         self.user_id = user
         self.time = dTime
 
-    #def __repr__(self):
-    #    if (self.time != None):
-    #        return "(" + str(self.time.hour) + ":" + str(self.time.minute) +") "+ self.message
-    #    return "(??:??) " + self.message
     def messageTime(self):
         return "(" + str(self.time.hour) + ":" + str(self.time.minute) + ")"
 
+# Chat table:
+# many to many with User table
+# one to many with Message table
+# Now Chat's description column isn't utilized
 class Chat(db.Model):
     __tablename__ = 'chat'
     id = db.Column(db.Integer, primary_key=True)

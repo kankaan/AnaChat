@@ -1,6 +1,3 @@
-p {
-
-}
 
 #leftNavigation {
 	width: 20%;
@@ -41,9 +38,6 @@ p {
 	top:0px;
 }
 
-.messageRow {
-	
-}
 #chatMessagesList {
 	height:60vh;
 	overflow:hidden; 

@@ -1,3 +1,5 @@
+# Forms file is for creating a registration and login form for the flask pages.
+
 from flask_wtf import FlaskForm
 from wtforms import BooleanField, StringField, PasswordField, validators
 

@@ -1,4 +1,5 @@
-
+// Create a new chat by sending post message to the server
+// TODO: Validate information before sending to the server
 function newChat() {
 console.log("foo")
 var name = document.getElementById("chatName").value;
@@ -10,6 +11,7 @@ $.post( "/newChat", {"chatName":name,"chatTitle":title, "csrf_token":token})
 
 }
 
+// This function should be used to loading a existing chats.
 function queryChat() {
 	var token = document.getElementById('csrf_token').value;
 	$.post("/chatList",{"csrf_token":token})

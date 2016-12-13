@@ -1,3 +1,5 @@
+// This was the first try to utilize server sent events.
+
 
 function sendMessage() {
 var message = document.getElementById('chatMessage').value;
