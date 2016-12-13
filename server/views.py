@@ -75,7 +75,7 @@ def unauthorized():
 def register():
     form = RegistrationForm(request.form)
     if (request.method == 'POST' and form.validate()):
-        if (User.query.filter_by(username=form.username.data) != None):
+        if (User.query.filter_by(username=form.username.data).first() == None):
             user = User(form.username.data,form.password.data)
             db.session.add(user)
             db.session.commit()

@@ -33,9 +33,9 @@ class TestCase(unittest.TestCase):
 	def logout(self):
 		return self.app.get('logout')
 	
-	def register(self,username,password,confirm,email="test@test.com"):
+	def register(self,username,password,email="test@test.com"):
 		return self.app.post('register',data=dict(username=username,
-			password=password,email=email,confirm=confirm), 
+			password=password,email=email,confirm=password), 
 			follow_redirects=True)
 
 	def test_resource_not_allowed(self):
@@ -47,9 +47,11 @@ class TestCase(unittest.TestCase):
 		assert rv.status_code == 400
 
 	def test_register(self):
-		rv =self.register("testPerson","testpass","testpass")
+		rv =self.register("testPerson","testpass")
 		assert rv.status_code == 200
-		#assert "New Password" in rv.data
+		# trying to register again with the same name
+		rv = self.register("testPerson","testpass")
+		assert rv.status_code == 400
 
 if __name__ == '__main__':
     unittest.main()
