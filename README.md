@@ -3,6 +3,10 @@
 AnaChat is a chat program, which includes server and client.
 It is produced by Flask.
 
+### Running
+
+AnaChat is tested by Python 2.7 in Linux 3.14.27-100.fc19.x86_64 x86_64 environment.
+Application uses socket.io and gevent server
 
 
 ### Backlog

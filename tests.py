@@ -42,6 +42,11 @@ class TestCase(unittest.TestCase):
 		rv = self.app.post('baseview',follow_redirects=True)
 		assert rv.status_code == 400
 
+	def test_not_correct_path(self):
+		rv = self.app.get("lo",follow_redirects=True)
+		assert "Repeat Password" in rv.data
+	
+
 	def test_login(self):
 		rv = self.login("tester","password")
 		assert rv.status_code == 400
