@@ -9,31 +9,31 @@ import datetime
 
 # Many to many relationship betweem User and Chat
 userchat_table = db.Table('user_chat_table',
-	db.Column('user_id', db.Integer,db.ForeignKey('user.id'), nullable=False),
-	db.Column('chat_id', db.Integer,db.ForeignKey('chat.id'), nullable=False),
-	db.PrimaryKeyConstraint('user_id','chat_id'))
+                          db.Column('user_id', db.Integer,
+                                    db.ForeignKey('user.id'), nullable=False),
+    db.Column('chat_id', db.Integer, db.ForeignKey('chat.id'), nullable=False),
+    db.PrimaryKeyConstraint('user_id', 'chat_id'))
 
 #user class for storing user information
-# TODO: remove unnecessary legacy funtions
-class User(db.Model,UserMixin):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
     password_hash = db.Column(db.String(128))
     jwt_token = db.Column(db.String)
-    chats = db.relationship('Chat',secondary=userchat_table,backref='users')
+    chats = db.relationship('Chat', secondary=userchat_table, backref='users')
     def __init__(self, username, password):
         self.username = username
         self.email = ""
         self.password_hash = pwd_context.encrypt(password)
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
-        
-    def generate_auth_token(self, expiration = 1000):
+
+    def generate_auth_token(self, expiration=1000):
         s = Serializer(app.config['SECRET_KEY'])
-        return s.dumps({ 'id': self.id })
-    
-    def generate_auth_headers(self,expiration =600):
-        s = Serializer(app.config['SECRET_KEY'], expires_in = expiration)
+        return s.dumps({'id': self.id})
+
+    def generate_auth_headers(self, expiration=600):
+        s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
         headerToken = s.dumps({'id':self.id})
         authTokens.push(headerToken)
         #header = s.make_header({'token':headerToken})
@@ -42,10 +42,10 @@ class User(db.Model,UserMixin):
         #return json.dumps(header)
 
     @staticmethod
-    def verify_auth_token( token):
+    def verify_auth_token(token):
         s = Serializer(app.config['SECRET_KEY'])
         try:
-            print("saatu token: ",token)
+            print("saatu token: ", token)
             data = s.loads(token)
         except SignatureExpired:
             print("signaure expired")
@@ -74,9 +74,9 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     message = db.Column(db.String)
     chat = db.Column(db.Integer, db.ForeignKey('chat.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))       
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     time = db.Column(db.DateTime)
-    def __init__(self,message,chat,user, dTime = datetime.datetime.now()):
+    def __init__(self, message, chat, user, dTime=datetime.datetime.now()):
         self.message = message
         self.chat = chat
         self.user_id = user
@@ -94,10 +94,10 @@ class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     chatname = db.Column(db.String(80), unique=True)
     topic = db.Column(db.String)
-    description = db.Column(db.String)   
-    messages = db.relationship('Message',backref='chatMessage',lazy='dynamic')
-	
-    def __init__(self,chatName,Topic,Description = ""):
+    description = db.Column(db.String)
+    messages = db.relationship('Message', backref='chatMessage', lazy='dynamic')
+
+    def __init__(self, chatName, Topic, Description=""):
         self.chatname = chatName
         self.topic = Topic
         self.description = Description
@@ -106,4 +106,3 @@ class Chat(db.Model):
 def initDb():
     db.drop_all()
 db.create_all()
-

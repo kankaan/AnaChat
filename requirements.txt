@@ -1,12 +1,26 @@
-flask>= 0.11
-flask-restful>= 0.3.5
-pytest>=3.0
-flask-sqlalchemy>=2.0
-Passlib>=1.7
-sqlalchemy>=1.1
-Flask-HTTPAuth
-flask_login
-flask_wtf
-flask-socketio
-gevent
+aniso8601==1.2.0
+click==6.7
 coverage==4.2
+Flask==0.12
+Flask-HTTPAuth==3.2.2
+Flask-Login==0.4.0
+Flask-RESTful==0.3.5
+Flask-SocketIO==2.8.5
+Flask-SQLAlchemy==2.2
+Flask-WTF==0.14.2
+gevent==1.2.1
+greenlet==0.4.12
+itsdangerous==0.24
+Jinja2==2.9.5
+MarkupSafe==1.0
+passlib==1.7.1
+py==1.4.32
+pytest==3.0.6
+python-dateutil==2.6.0
+python-engineio==1.3.0
+python-socketio==1.7.2
+pytz==2016.10
+six==1.10.0
+SQLAlchemy==1.1.6
+Werkzeug==0.11.15
+WTForms==2.1

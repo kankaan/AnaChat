@@ -1,16 +1,13 @@
 # AnAChat
 
-AnaChat is a chat server.
-It is produced by Flask.
+AnaChat is a chat server which is I created for testing websockets.
+The chat server uses Flask framework.
+AnaChat is tested in Python 3.5
+Application uses Flask-Socketio for websockets.
+(http://flask-socketio.readthedocs.io/en/latest/)
 
 ### Running
 
-AnaChat works in Python 2.7. 
-Application uses Flask-Socketio for websockets.
-According to author of Flask-socketio:
-"Note that socketio.run(app) runs a production ready server when eventlet or
-gevent are installed"
-(http://flask-socketio.readthedocs.io/en/latest/)
 
 
 ### Backlog
