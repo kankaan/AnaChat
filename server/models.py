@@ -1,10 +1,13 @@
-# This is the SQL schema of the application.
+""" 
+This is the SQL schema of the application.
+"""
 
 from flask_sqlalchemy import SQLAlchemy
 
 from server import db, app
 from flask_login import UserMixin
 from passlib.apps import custom_app_context as pwd_context
+from . import logger
 import datetime
 
 # Many to many relationship betweem User and Chat

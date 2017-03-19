@@ -1,14 +1,12 @@
-from flask import Flask, request, g, Response, render_template, flash, \
-                    url_for, redirect, stream_with_context, jsonify
-from flask_login import LoginManager, login_user, logout_user, current_user, \
+from flask import request, render_template, flash, \
+                    url_for, redirect, jsonify
+from flask_login import login_user, logout_user, current_user, \
                         login_required
 from urllib.parse import urlparse, urljoin
-from .forms import *
+from .forms import RegistrationForm, LoginForm
 from server import app, db, socketio, login_manager
-from .models import *
-import datetime
-import functools
-from flask_socketio import emit, send, disconnect, join_room, leave_room
+from .models import User, Message, Chat
+from . import logger
 
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)
@@ -33,12 +31,9 @@ def load_user(user_id):
 #
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Here we use a class of some kind to represent and validate our
-    # client-side form data. For example, WTForms is a library that will
-    # handle this for us, and we use a custom LoginForm to validate.
     form = LoginForm()
     if form.validate_on_submit():
-        print(form.errors)
+        logger.debug(form.errors)
         # Login and validate the user.
         # user should be an instance of your `User` class
         user = User.query.filter_by(username=form.username.data).first()
@@ -63,7 +58,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect('index.html')
+    return redirect(url_for('index'), code=307)
 
 @app.route('/')
 @login_required
@@ -98,14 +93,14 @@ def register():
 # funtion returns either all the chats of the database or
 # if the userID is set, the chats of user.
 def chatLists(userID=None):
-    chatList = []
+    chats = []
     if userID != None:
-        chatList = db.session.query(Chat).join(User, Chat.users). \
+        chats = db.session.query(Chat).join(User, Chat.users). \
                         filter(User.id == current_user.id).all()
     else:
-        chatList = Chat.query.all()
+        chats = Chat.query.all()
     returnList = []
-    for i in chatList:
+    for i in chats:
         chat = {}
         chat['name'] = i.chatname
         chat['title'] = i.topic
@@ -183,7 +178,7 @@ def newChat():
 def chatList():
     returnQueryList = []
     for i in db.session.query(Chat).all():
-        print(i.chatname)
+        logger.debug(i.chatname)
         returnQueryList.append({"chatname":i.chatname, "id":i.id})
     return jsonify(jsonList=returnQueryList)
 
@@ -209,57 +204,3 @@ def joinChat():
     chat = Chat.query.filter_by(id=chatID).first()
     user.chats.append(chat)
     return redirect(url_for('baseview'))
-
-# autenticated_only is for socket authentication.
-# Check: https://flask-socketio.readthedocs.io/en/latest/
-def authenticated_only(f):
-    @functools.wraps(f)
-    def wrapped(*args, **kwargs):
-        if not current_user.is_authenticated:
-            disconnect()
-        else:
-            return f(*args, **kwargs)
-    return wrapped
-
-
-@socketio.on('message')
-@authenticated_only
-def handle_message(message):
-    print('received message: ' + message)
-
-# messageJSON is used for broadcasting user messages to other chat members
-# The method first creates message instance and saves it to database. Then
-# method send it to the audience of the chat.
-@socketio.on('JSONMessage')
-@authenticated_only
-def messageJSON(JSONMessage):
-    now = datetime.datetime.now()
-    timeNow = "(" + str(now.hour) + ":" + str(now.minute) + ") "
-    m = Message(JSONMessage['message'], JSONMessage['room'], \
-        current_user.id, now)
-    message = timeNow + current_user.username + ": " + JSONMessage['message']
-    db.session.add(m)
-    db.session.commit()
-    socketio.emit("receivedMessage", message, \
-        room=JSONMessage['room'])
-
-
-# Functions below are not propably needed.
-@socketio.on('connect')
-@authenticated_only
-def on_connect():
-    send('connected')
-
-@socketio.on('join')
-@authenticated_only
-def on_join(data):
-    room = data['room']
-    join_room(room)
-    send(' has entered the room.', room=room)
-
-@socketio.on('leave')
-@authenticated_only
-def on_leave(data):
-    room = data['room']
-    leave_room(room)
-    send(' has left the room.', room=room)

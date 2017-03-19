@@ -1,5 +1,6 @@
-# Forms file is for creating a registration and login form for the flask pages.
-
+"""
+Forms file is for creating a registration and login form for the flask pages.
+"""
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, validators
 
@@ -14,4 +15,4 @@ class RegistrationForm(FlaskForm):
 
 class LoginForm(FlaskForm):
     username = StringField('Username', [validators.Length(min=4, max=25)])
-    password = PasswordField('Password', [validators.DataRequired()])	
+    password = PasswordField('Password', [validators.DataRequired()])
